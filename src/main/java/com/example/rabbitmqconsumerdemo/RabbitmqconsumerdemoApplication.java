@@ -1,10 +1,11 @@
 package com.example.rabbitmqconsumerdemo;
 
-import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.amqp.core.Queue;
 
 @SpringBootApplication
 public class RabbitmqconsumerdemoApplication {
@@ -15,32 +16,45 @@ public class RabbitmqconsumerdemoApplication {
 
     @Bean
     public Queue createQueue() {
-        return new Queue(createQueueName, false);
+        return new Queue(createQueueName, true);
     }
 
     @Bean
     public Queue updateQueue() {
-        return new Queue(updateQueueName, false);
+        return new Queue(updateQueueName, true);
     }
 
     @Bean
     public Queue deleteQueue() {
-        return new Queue(deleteQueueName, false);
+        return new Queue(deleteQueueName, true);
     }
 
     @RabbitListener(queues = createQueueName)
     public void listenCreate(String message) {
-        System.out.println("Message read from createQueue: " + message);
+        try {
+            System.out.println("Message read from createQueue: " + message);
+        } catch (Exception e) {
+            System.err.println("Error processing message from createQueue: " + e.getMessage());
+
+        }
     }
 
     @RabbitListener(queues = updateQueueName)
     public void listenUpdate(String message) {
-        System.out.println("Message read from updateQueue: " + message);
+        try {
+            System.out.println("Message read from updateQueue: " + message);
+        } catch (Exception e) {
+            System.err.println("Error processing message from updateQueue: " + e.getMessage());
+        }
     }
 
     @RabbitListener(queues = deleteQueueName)
     public void listenDelete(String message) {
-        System.out.println("Message read from deleteQueue: " + message);
+        try {
+            System.out.println("Message read from deleteQueue: " + message);
+        } catch (Exception e) {
+            System.err.println("Error processing message from deleteQueue: " + e.getMessage());
+        }
     }
 
     public static void main(String[] args) {
