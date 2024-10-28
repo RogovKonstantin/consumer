@@ -1,18 +1,28 @@
 package com.example.rabbitmqconsumerdemo;
 
+import com.example.rabbitmqconsumerdemo.utils.MessageProcessor;
+import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.amqp.core.Queue;
 
 @SpringBootApplication
 public class RabbitmqconsumerdemoApplication {
 
+    //TODO time logging and suspicious listings
+
+    private final MessageProcessor messageProcessor;
+
     public static final String createQueueName = "createQueue";
     public static final String updateQueueName = "updateQueue";
     public static final String deleteQueueName = "deleteQueue";
+
+    @Autowired
+    public RabbitmqconsumerdemoApplication(MessageProcessor messageProcessor) {
+        this.messageProcessor = messageProcessor;
+    }
 
     @Bean
     public Queue createQueue() {
@@ -31,33 +41,21 @@ public class RabbitmqconsumerdemoApplication {
 
     @RabbitListener(queues = createQueueName)
     public void listenCreate(String message) {
-        try {
-            System.out.println("Message read from createQueue: " + message);
-        } catch (Exception e) {
-            System.err.println("Error processing message from createQueue: " + e.getMessage());
-
-        }
+        messageProcessor.processCreateMessage(message);
     }
 
     @RabbitListener(queues = updateQueueName)
     public void listenUpdate(String message) {
-        try {
-            System.out.println("Message read from updateQueue: " + message);
-        } catch (Exception e) {
-            System.err.println("Error processing message from updateQueue: " + e.getMessage());
-        }
+        messageProcessor.processUpdateMessage(message);
     }
 
     @RabbitListener(queues = deleteQueueName)
     public void listenDelete(String message) {
-        try {
-            System.out.println("Message read from deleteQueue: " + message);
-        } catch (Exception e) {
-            System.err.println("Error processing message from deleteQueue: " + e.getMessage());
-        }
+        messageProcessor.processDeleteMessage(message);
     }
 
     public static void main(String[] args) {
         SpringApplication.run(RabbitmqconsumerdemoApplication.class, args);
     }
 }
+
