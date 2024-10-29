@@ -13,23 +13,22 @@ import java.util.UUID;
 public class MessageProcessor {
 
     private final AuditLogService auditLogService;
-    private final ObjectMapper objectMapper;
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     public MessageProcessor(AuditLogService auditLogService) {
         this.auditLogService = auditLogService;
-        this.objectMapper = new ObjectMapper();
     }
 
     public void processMessage(String message, ActionType actionType) {
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
 
         System.out.println("Received " + actionType + " message: " + message);
         try {
             UUID listingId = extractListingId(message, actionType);
             String details = "Processed from " + actionType + " queue";
 
-            long endTime = System.currentTimeMillis();
+            long endTime = System.nanoTime();
             long processingTime = endTime - startTime;
 
             auditLogService.processAuditLog(listingId, actionType.name(), details, processingTime);
@@ -37,7 +36,7 @@ public class MessageProcessor {
 
         } catch (Exception e) {
             System.err.println("Error processing message from " + actionType + " queue: " + e.getMessage());
-            long processingTime = System.currentTimeMillis() - startTime;
+            long processingTime = System.nanoTime() - startTime;
             logFailedMessage(message, actionType, e.getMessage(), processingTime);
         }
     }
