@@ -19,17 +19,15 @@ public class AuditLogServiceImpl implements AuditLogService {
         this.auditLogRepository = auditLogRepository;
     }
 
-    @Override
-    public void saveAuditLog(AuditLog auditLog) {
-        auditLogRepository.save(auditLog);
-    }
-    @Override
-    public void processAuditLog(UUID listingId, String action, String details) {
-        AuditLog auditLog = new AuditLog();
-        auditLog.setListingId(listingId);
-        auditLog.setAction(action);
-        auditLog.setDetails(details);
 
-        auditLogRepository.save(auditLog);
+    @Override
+    public void processAuditLog(UUID listingId, String action, String details, long processingTime) {
+        AuditLog log = new AuditLog();
+        log.setListingId(listingId);
+        log.setAction(action);
+        log.setDetails(details);
+        log.setProcessingTime(processingTime);
+        auditLogRepository.saveAndFlush(log);
     }
+
 }

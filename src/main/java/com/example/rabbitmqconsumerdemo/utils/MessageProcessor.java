@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
+
 @Component
 public class MessageProcessor {
 
@@ -20,35 +21,33 @@ public class MessageProcessor {
         this.objectMapper = new ObjectMapper();
     }
 
-    public void processCreateMessage(String message) {
-        processJsonMessage(message, "CREATE");
-    }
+    public void processMessage(String message, ActionType actionType) {
+        long startTime = System.currentTimeMillis();
 
-    public void processUpdateMessage(String message) {
-        processJsonMessage(message, "UPDATE");
-    }
-
-    public void processDeleteMessage(String message) {
-        System.out.println("Received delete message: " + message);
+        System.out.println("Received " + actionType + " message: " + message);
         try {
-            UUID listingId = extractIdFromString(message, "Deleted listing with ID: ");
-            String details = "Processed from DELETE queue";
-            auditLogService.processAuditLog(listingId, "DELETE", details);
-            System.out.println("Processed DELETE message for listingId: " + listingId);
+            UUID listingId = extractListingId(message, actionType);
+            String details = "Processed from " + actionType + " queue";
+
+            long endTime = System.currentTimeMillis();
+            long processingTime = endTime - startTime;
+
+            auditLogService.processAuditLog(listingId, actionType.name(), details, processingTime);
+            System.out.println("Processed " + actionType + " message for listingId: " + listingId);
+
         } catch (Exception e) {
-            System.err.println("Error processing message from DELETE queue: " + e.getMessage());
+            System.err.println("Error processing message from " + actionType + " queue: " + e.getMessage());
+            long processingTime = System.currentTimeMillis() - startTime;
+            logFailedMessage(message, actionType, e.getMessage(), processingTime);
         }
     }
 
-    private void processJsonMessage(String message, String action) {
-        System.out.println("Received " + action + " message: " + message);
-        try {
-            UUID listingId = extractIdFromJson(message);
-            String details = "Processed from " + action + " queue";
-            auditLogService.processAuditLog(listingId, action, details);
-            System.out.println("Processed " + action + " message for listingId: " + listingId);
-        } catch (Exception e) {
-            System.err.println("Error processing message from " + action + " queue: " + e.getMessage());
+
+    private UUID extractListingId(String message, ActionType actionType) throws Exception {
+        if (actionType == ActionType.DELETE) {
+            return extractIdFromString(message);
+        } else {
+            return extractIdFromJson(message);
         }
     }
 
@@ -60,20 +59,20 @@ public class MessageProcessor {
         return UUID.fromString(jsonNode.get("id").asText());
     }
 
-    private UUID extractIdFromString(String message, String prefix) throws Exception {
+    private UUID extractIdFromString(String message) {
         String cleanedMessage = message.replaceAll("^\"|\"$", "").trim();
-
-        if (cleanedMessage.startsWith(prefix)) {
-            String uuidString = cleanedMessage.substring(prefix.length()).trim();
-
+        if (cleanedMessage.startsWith("Deleted listing with ID: ")) {
+            String uuidString = cleanedMessage.substring("Deleted listing with ID: ".length()).trim();
             if (uuidString.isEmpty()) {
                 throw new IllegalArgumentException("UUID is empty in message: " + message);
             }
-
             return UUID.fromString(uuidString);
         } else {
             throw new IllegalArgumentException("Unhandled message format: " + message);
         }
     }
 
+    private void logFailedMessage(String message, ActionType actionType, String errorDetails, long processingTime) {
+        auditLogService.processAuditLog(null, "FAILED_" + actionType, "Failed message: " + message + ", Error: " + errorDetails, processingTime);
+    }
 }

@@ -11,10 +11,9 @@ import java.util.UUID;
 public class AuditLog extends IdDateTimeModel {
 
     private String action;
-
     private String details;
-
     private UUID listingId;
+    private long processingTime;
 
     @Column(nullable = false)
     public String getAction() {
@@ -34,7 +33,6 @@ public class AuditLog extends IdDateTimeModel {
         this.details = details;
     }
 
-
     @Column(name = "listing_id", nullable = false)
     public UUID getListingId() {
         return listingId;
@@ -42,5 +40,14 @@ public class AuditLog extends IdDateTimeModel {
 
     public void setListingId(UUID listingId) {
         this.listingId = listingId;
+    }
+
+    @Column(name = "processing_time", nullable = false) // Column for processing time
+    public long getProcessingTime() {
+        return processingTime;
+    }
+
+    public void setProcessingTime(long processingTime) {
+        this.processingTime = processingTime;
     }
 }

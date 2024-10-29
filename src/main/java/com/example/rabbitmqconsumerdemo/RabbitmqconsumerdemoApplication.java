@@ -1,5 +1,6 @@
 package com.example.rabbitmqconsumerdemo;
 
+import com.example.rabbitmqconsumerdemo.utils.ActionType;
 import com.example.rabbitmqconsumerdemo.utils.MessageProcessor;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -10,8 +11,6 @@ import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 public class RabbitmqconsumerdemoApplication {
-
-    //TODO time logging and suspicious listings
 
     private final MessageProcessor messageProcessor;
 
@@ -41,17 +40,17 @@ public class RabbitmqconsumerdemoApplication {
 
     @RabbitListener(queues = createQueueName)
     public void listenCreate(String message) {
-        messageProcessor.processCreateMessage(message);
+        messageProcessor.processMessage(message, ActionType.CREATE);
     }
 
     @RabbitListener(queues = updateQueueName)
     public void listenUpdate(String message) {
-        messageProcessor.processUpdateMessage(message);
+        messageProcessor.processMessage(message,ActionType.UPDATE);
     }
 
     @RabbitListener(queues = deleteQueueName)
     public void listenDelete(String message) {
-        messageProcessor.processDeleteMessage(message);
+        messageProcessor.processMessage(message,ActionType.DELETE);
     }
 
     public static void main(String[] args) {
