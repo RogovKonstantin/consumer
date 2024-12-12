@@ -62,13 +62,13 @@ public class RabbitmqconsumerdemoApplication {
         messageProcessor.processMessage(message, ActionType.CREATE);
         notificationService.sendNotification(message);
     }
-
+    @RabbitListener(queues = updateQueueName, containerFactory = "simpleContainerFactory")
     @RabbitListener(queues = updateQueueName)
     public void listenUpdate(String message) {
         messageProcessor.processMessage(message, ActionType.UPDATE);
         notificationService.sendNotification(message);
     }
-
+    @RabbitListener(queues = updateQueueName, containerFactory = "simpleContainerFactory")
     @RabbitListener(queues = deleteQueueName)
     public void listenDelete(String message) {
         messageProcessor.processMessage(message, ActionType.DELETE);
