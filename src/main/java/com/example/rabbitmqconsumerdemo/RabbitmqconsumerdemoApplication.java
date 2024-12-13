@@ -27,8 +27,6 @@ public class RabbitmqconsumerdemoApplication {
     public static final String updateQueueName = "updateQueue";
     public static final String deleteQueueName = "deleteQueue";
     public static final String validateQueueName = "validateQueue";
-    public static final String validationResponseQueueName = "validationResponseQueue";
-
 
     @Autowired
     public RabbitmqconsumerdemoApplication(MessageProcessor messageProcessor, RabbitMQPublisher rabbitMQPublisher) {
