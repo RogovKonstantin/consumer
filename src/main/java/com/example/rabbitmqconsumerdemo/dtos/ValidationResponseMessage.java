@@ -37,4 +37,12 @@ public class ValidationResponseMessage {
         this.validationMessage = validationMessage;
     }
 
+    @Override
+    public String toString() {
+        return "ValidationResponseMessage{" +
+                "listingId=" + listingId +
+                ", isValid=" + isValid +
+                ", validationMessage='" + validationMessage + '\'' +
+                '}';
+    }
 }

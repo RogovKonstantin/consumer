@@ -52,6 +52,4 @@ public class RabbitMQConfiguration {
         return BindingBuilder.bind(validationResponseQueue).to(listingExchange).with("listings.validate.response");
     }
 
-
-
 }

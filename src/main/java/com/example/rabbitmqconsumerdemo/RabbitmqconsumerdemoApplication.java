@@ -24,7 +24,6 @@ public class RabbitmqconsumerdemoApplication {
     private final RabbitMQPublisher rabbitMQPublisher;
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public static final String createQueueName = "createQueue";
     public static final String updateQueueName = "updateQueue";
     public static final String deleteQueueName = "deleteQueue";
     public static final String validateQueueName = "validateQueue";
@@ -35,11 +34,6 @@ public class RabbitmqconsumerdemoApplication {
     public RabbitmqconsumerdemoApplication(MessageProcessor messageProcessor, RabbitMQPublisher rabbitMQPublisher) {
         this.messageProcessor = messageProcessor;
         this.rabbitMQPublisher = rabbitMQPublisher;
-    }
-
-    @Bean
-    public Queue createQueue() {
-        return new Queue(createQueueName, false);
     }
 
     @Bean
@@ -57,19 +51,14 @@ public class RabbitmqconsumerdemoApplication {
         return new Queue(validateQueueName, false);
     }
 
-    @RabbitListener(queues = createQueueName)
-    public void listenCreate(String message) {
-        messageProcessor.processMessage(message, ActionType.CREATE);
-        notificationService.sendNotification(message);
-    }
+
     @RabbitListener(queues = updateQueueName, containerFactory = "simpleContainerFactory")
-    @RabbitListener(queues = updateQueueName)
     public void listenUpdate(String message) {
         messageProcessor.processMessage(message, ActionType.UPDATE);
         notificationService.sendNotification(message);
     }
-    @RabbitListener(queues = updateQueueName, containerFactory = "simpleContainerFactory")
-    @RabbitListener(queues = deleteQueueName)
+
+    @RabbitListener(queues = deleteQueueName, containerFactory = "simpleContainerFactory")
     public void listenDelete(String message) {
         messageProcessor.processMessage(message, ActionType.DELETE);
         notificationService.sendNotification(message);
@@ -78,19 +67,18 @@ public class RabbitmqconsumerdemoApplication {
     @RabbitListener(queues = validateQueueName, containerFactory = "rabbitListenerContainerFactory")
     public void handleValidationRequest(ValidationRequestMessage requestMessage) {
 
-
-    ListingValidationProto.ValidationResponse validationResponse =
+        ListingValidationProto.ValidationResponse validationResponse =
                 ListingValidationClient.validateListing(requestMessage.getTitle(), requestMessage.getDescription());
-
+        notificationService.sendNotification("Listing " + requestMessage.getListingId() + " sent to validation service");
         ValidationResponseMessage responseMessage = new ValidationResponseMessage(
                 requestMessage.getListingId(),
                 validationResponse.getIsValid(),
                 validationResponse.getMessage()
         );
-
+        notificationService.sendNotification("Listing's" + requestMessage.getListingId() + " " + validationResponse.getMessage());
         rabbitMQPublisher.sendMessage("listings.validate.response", responseMessage);
+        notificationService.sendNotification(responseMessage + "sent to main service");
     }
-
 
 
     public static void main(String[] args) {
